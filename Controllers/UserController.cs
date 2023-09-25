@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using TodoApp.Data;
 using TodoApp.Data.dtos;
 using TodoApp.Models;
+using TodoApp.Services;
 
 namespace TodoApp.Controllers;
 
@@ -14,11 +15,13 @@ public class UserController : ControllerBase
 {
     private TodoContext _context;
     private IMapper _mapper;
+    private PasswordHashService _hasher;
 
-    public UserController(TodoContext context, IMapper mapper)
+    public UserController(TodoContext context, IMapper mapper, PasswordHashService hasher)
     {
         _context = context;
         _mapper = mapper;
+        _hasher = hasher; 
     }
 
     [HttpPost]
@@ -28,10 +31,15 @@ public class UserController : ControllerBase
         {
             return BadRequest("Invalid data");
         }
+        userDto.Password = _hasher.HashPassword(userDto.Password, out var salt);
+
         User user = _mapper.Map<User>(userDto);
+        user.Salt = Convert.ToHexString(salt);
+
         _context.Users.Add(user);
         _context.SaveChanges();
-        return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
+        var readUserDto =  _mapper.Map<ReadUserDto>(user);
+        return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, readUserDto);
     }
     [HttpGet]
     public IEnumerable<ReadUserDto> GetAllUsers([FromQuery] int skip = 0, [FromQuery] int take = 10)

@@ -12,6 +12,8 @@ public class User
 
     [Required]
     public string Password {get; set;}
+    [Required]
+    public string Salt {get; set; }
 
     public ICollection<Category> Categories {get; } = new List<Category>();
 }
