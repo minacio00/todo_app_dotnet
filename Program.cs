@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-var connectionString = builder.Configuration.GetConnectionString("DatabaseConn");
+var connectionString = builder.Configuration["ConnectionStrings:Databaseconn"];
 builder.Services.AddDbContext<TodoContext>(opts => opts.UseNpgsql(connectionString));
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<PasswordHashService>();
